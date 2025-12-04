@@ -1,28 +1,38 @@
+// Load fighters from JSON
 let fighters = [];
-
 fetch('fighters.json')
-  .then(response => response.json())
-  .then(data => {
-    fighters = data;
-    const dataList = document.getElementById('fighters');
-    fighters.forEach(f => {
-      const option = document.createElement('option');
-      option.value = f.name;
-      dataList.appendChild(option);
-    });
-  });
+    .then(res => res.json())
+    .then(data => {
+        fighters = data;
+        const dataList = document.getElementById('fighters');
+        fighters.forEach(f => {
+            const option = document.createElement('option');
+            option.value = f.name;
+            dataList.appendChild(option);
+        });
+    })
+    .catch(err => console.error('Failed to load fighters.json', err));
+
+// Pick a random fighter as mystery fighter
+let mysteryFighter = null;
+setTimeout(() => {
+    mysteryFighter = fighters[Math.floor(Math.random() * fighters.length)];
+    console.log('Mystery fighter is:', mysteryFighter.name); // For debugging
+}, 500);
 
 const guessButton = document.getElementById('guess-button');
 const guessInput = document.getElementById('guess-input');
 const grid = document.getElementById('grid');
 
-// Example mystery fighter for testing
-const mysteryFighter = fighters[Math.floor(Math.random() * fighters.length)];
-
 guessButton.addEventListener('click', () => {
     const guessName = guessInput.value.trim();
+    if (!guessName) return;
+
     const fighter = fighters.find(f => f.name.toLowerCase() === guessName.toLowerCase());
-    if (!fighter) return alert("Fighter not found");
+    if (!fighter) {
+        alert("Fighter not found!");
+        return;
+    }
 
     const attributes = [
         { value: fighter.nationality, key: 'nationality' },
@@ -37,6 +47,7 @@ guessButton.addEventListener('click', () => {
         const tile = document.createElement('div');
         tile.classList.add('tile');
 
+        // Numeric attributes: show arrow
         if (attr.key === 'height' || attr.key === 'wins') {
             let symbol = '';
             if (fighter[attr.key] > mysteryFighter[attr.key]) symbol = '↑';
@@ -56,6 +67,7 @@ guessButton.addEventListener('click', () => {
             tile.classList.add('incorrect');
         }
 
+        // Add fighter name under tile
         const nameDiv = document.createElement('div');
         nameDiv.classList.add('tile-name');
         nameDiv.textContent = fighter.name;
